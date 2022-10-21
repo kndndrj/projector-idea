@@ -6,9 +6,9 @@ Currently there is only support for goland!
 
 NOTE: Only basic functionality for now.
 
-## GoLand
+## Idea
 
-- module: `idea.goland`
+- module: `idea`
 - options:
   - `path` - *string*: path to `workspace.xml` - default:
     `./.idea/workspace.xml`
