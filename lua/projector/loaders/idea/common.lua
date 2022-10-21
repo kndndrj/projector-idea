@@ -2,9 +2,19 @@ local M = {}
 
 ---@param obj table
 ---@param attribute string atribute that you want to extract
----@param key string field name of the attribute used for key in response
----@param value? string field name of the attribute used for value in response
+---@param key string field name of the attribute
 ---@return string[]|string|nil
+function M.get_attribute(obj, attribute, key)
+  -- get the nested field
+  for s in attribute:gmatch("[^.]+") do
+    obj = obj[s]
+    if not obj then
+      return
+    end
+  end
+  return obj._attr[key]
+end
+
 function M.get_attribute_pairs(obj, attribute, key, value)
   -- get the nested field
   local attr = obj
@@ -22,14 +32,6 @@ function M.get_attribute_pairs(obj, attribute, key, value)
   for _, a in pairs(attr) do
     if a._attr then
       ret[a._attr[key]] = a._attr[value] or {}
-    end
-  end
-  if not value then
-    ret = vim.tbl_keys(ret)
-    if #ret == 1 then
-      for _, r in pairs(ret) do
-        ret = r
-      end
     end
   end
   return ret

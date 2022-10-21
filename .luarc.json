@@ -3,7 +3,13 @@
     "diagnostics": {
         "enable": true,
         "globals": [
-          "vim"
+            "vim"
+        ],
+        "disable": [
+            "undefined-doc-class",
+            "undefined-doc-name",
+            "undefined-doc-param",
+            "undefined-field"
         ]
     },
     "workspace": {
