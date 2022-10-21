@@ -13,4 +13,4 @@ NOTE: Only basic functionality for now.
     `./.idea/workspace.xml`
 - variable expansion: Idea's variables (e.g. `$PROJECT_DIR$`)
 - requirements:
-  - `xml2lua` - luarocks
+  - `xml2lua` (luarocks)
