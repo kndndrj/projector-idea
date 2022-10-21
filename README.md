@@ -1,8 +1,7 @@
 # Neovim Projector IDEA Loader
 
 Extension for [nvim-projector](https://github.com/kndndrj/nvim-projector) that
-adds additional IDEA loaders.
-Currently there is only support for goland!
+adds additional IDEA loaders. Currently there is only support for goland!
 
 NOTE: Only basic functionality for now.
 
