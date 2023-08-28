@@ -1,17 +1,16 @@
-local Task = require("projector.task")
 local common = require("projector.loaders.idea.common")
 
 local M = {}
 
-function M.convert_config(idea_config)
+function M.convert_config(config)
   -- working directory
-  local cwd = common.get_attribute(idea_config, "working_directory", "value")
+  local cwd = common.get_attribute(config, "working_directory", "value")
 
   -- environment
-  local env = common.get_attribute_pairs(idea_config, "envs.env", "name", "value")
+  local env = common.get_attribute_pairs(config, "envs.env", "name", "value")
 
   -- arguments
-  local arguments = common.get_attribute(idea_config, "parameters", "value")
+  local arguments = common.get_attribute(config, "parameters", "value")
   local args
   if arguments then
     args = {}
@@ -23,13 +22,13 @@ function M.convert_config(idea_config)
   end
 
   -- file/package/directory/pattern to run
-  local file = common.get_attribute(idea_config, "filePath", "value")
-  local package = common.get_attribute(idea_config, "package", "value")
-  local directory = common.get_attribute(idea_config, "directory", "value")
-  local pattern = common.get_attribute(idea_config, "pattern", "value")
+  local file = common.get_attribute(config, "filePath", "value")
+  local package = common.get_attribute(config, "package", "value")
+  local directory = common.get_attribute(config, "directory", "value")
+  local pattern = common.get_attribute(config, "pattern", "value")
 
   -- kind of run option
-  local kind = common.get_attribute(idea_config, "kind", "value")
+  local kind = common.get_attribute(config, "kind", "value")
   if not kind then
     return
   end
@@ -44,9 +43,9 @@ function M.convert_config(idea_config)
     param = directory
   end
   local command
-  if idea_config._attr.type == "GoApplicationRunConfiguration" then
+  if config._attr.type == "GoApplicationRunConfiguration" then
     command = "go run " .. param
-  elseif idea_config._attr.type == "GoTestRunConfiguration" then
+  elseif config._attr.type == "GoTestRunConfiguration" then
     command = "go test -v '" .. param .. "'"
     if pattern then
       command = command .. " -run '" .. pattern .. "'"
@@ -54,15 +53,15 @@ function M.convert_config(idea_config)
   end
 
   -- translate field names
-  local c = {
-    name = idea_config._attr.name,
+  return {
+    name = config._attr.name,
     env = env,
     cwd = cwd,
     args = args,
     command = command,
+    scope = "project",
+    group = "go",
   }
-
-  return Task:new(c, { scope = "project", group = "go" })
 end
 
 return M

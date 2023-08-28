@@ -1,36 +1,56 @@
-local Loader = require("projector.contract.loader")
-local utils = require("projector.utils")
 local xml2lua = require("xml2lua")
 local xml2lua_handler = require("xmlhandler.tree")
-local common = require("projector.loaders.idea.common")
-local goland = require("projector.loaders.idea.goland")
+local common = require("projector_idea.common")
+local goland = require("projector_idea.goland")
 
----@type Loader
-local IdeaLoader = Loader:new()
+---@class IdeaLoader: Loader
+---@field private get_path fun():string function that returns a path to launch.json file
+local IdeaLoader = {}
 
----@return Task[]|nil
+---@param opts? { path: string|fun():(string), }
+---@return IdeaLoader
+function IdeaLoader:new(opts)
+  opts = opts or {}
+
+  local path_getter
+  if type(opts.path) == "string" then
+    path_getter = function()
+      return opts.path
+    end
+  elseif type(opts.path) == "function" then
+    path_getter = function()
+      return opts.path() or vim.fn.getcwd() .. "/.idea/workspace.xml"
+    end
+  end
+
+  local o = {
+    get_path = path_getter or function()
+      return vim.fn.getcwd() .. "/.idea/workspace.xml"
+    end,
+  }
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
+---@return string
+function IdeaLoader:name()
+  return ".idea"
+end
+
+---@return task_configuration[]?
 function IdeaLoader:load()
-  ---@type { path: string }
-  local opts = self.user_opts
-
-  local path = opts.path or (vim.fn.getcwd() .. "/.idea/workspace.xml")
-  if type(path) ~= "string" then
-    utils.log("error", 'Got: "' .. type(path) .. '", want "string".', "Idea Loader")
+  if not vim.loop.fs_stat(self.get_path()) then
     return
   end
 
-  if not vim.loop.fs_stat(path) then
-    return
-  end
-
-  local xml = xml2lua.loadFile(path)
+  local xml = xml2lua.loadFile(self.get_path())
 
   local parser = xml2lua.parser(xml2lua_handler)
   local ok = pcall(function()
     parser:parse(xml)
   end)
   if not ok then
-    utils.log("error", 'Could not parse json file: "' .. path .. '".', "Builtin Loader")
     return
   end
 
@@ -47,31 +67,29 @@ function IdeaLoader:load()
     end
   end
 
-  -- map with Task objects
-  local tasks = {}
-
   if vim.tbl_isempty(idea_configs) then
     return
   end
 
+  local configs = {}
+
   for _, config in pairs(idea_configs) do
     local idea_type = common.get_attribute(config, "", "type")
-    local task
+    local projector_config
     if idea_type == "GoApplicationRunConfiguration" or idea_type == "GoTestRunConfiguration" then
-      task = goland.convert_config(config)
+      projector_config = goland.convert_config(config)
     end
-    if task then
-      table.insert(tasks, task)
+    if projector_config then
+      table.insert(configs, projector_config)
     end
   end
 
-  return tasks
+  return configs
 end
 
--- We can use already configured variable expansion
----@param configuration Configuration
----@return Configuration
-function IdeaLoader:expand_variables(configuration)
+---@param configuration task_configuration
+---@return task_configuration
+function IdeaLoader:expand(configuration)
   local function expand_config_variables(option)
     if type(option) == "table" then
       return vim.tbl_map(expand_config_variables, option)
