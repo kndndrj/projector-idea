@@ -3,13 +3,15 @@ local xml2lua_handler = require("xmlhandler.tree")
 local common = require("projector_idea.common")
 local goland = require("projector_idea.goland")
 
+local M = {}
+
 ---@class IdeaLoader: Loader
 ---@field private get_path fun():string function that returns a path to launch.json file
-local IdeaLoader = {}
+M.Loader = {}
 
 ---@param opts? { path: string|fun():(string), }
 ---@return IdeaLoader
-function IdeaLoader:new(opts)
+function M.Loader:new(opts)
   opts = opts or {}
 
   local path_getter
@@ -34,12 +36,12 @@ function IdeaLoader:new(opts)
 end
 
 ---@return string
-function IdeaLoader:name()
+function M.Loader:name()
   return ".idea"
 end
 
 ---@return task_configuration[]?
-function IdeaLoader:load()
+function M.Loader:load()
   if not vim.loop.fs_stat(self.get_path()) then
     return
   end
@@ -89,7 +91,7 @@ end
 
 ---@param configuration task_configuration
 ---@return task_configuration
-function IdeaLoader:expand(configuration)
+function M.Loader:expand(configuration)
   local function expand_config_variables(option)
     if type(option) == "table" then
       return vim.tbl_map(expand_config_variables, option)
@@ -110,4 +112,4 @@ function IdeaLoader:expand(configuration)
   return vim.tbl_map(expand_config_variables, configuration)
 end
 
-return IdeaLoader
+return M
