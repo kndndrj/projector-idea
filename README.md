@@ -1,4 +1,4 @@
-# Neovim Projector IDEA Loader
+# Neovim Projector IDEA Extension
 
 Extension for [nvim-projector](https://github.com/kndndrj/nvim-projector) that
 adds additional IDEA loader.
@@ -9,7 +9,9 @@ NOTE: Currently there is only support for goland.
 
 Install it as any other plugin. Be aware that
 [`xml2lua`](https://github.com/manoelcampos/xml2lua) is needed as luarocks
-dependency. Example using packer.nvim:
+dependency.
+
+Example installation using packer.nvim:
 
 ```lua
 use {
